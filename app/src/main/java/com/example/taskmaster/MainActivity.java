@@ -20,19 +20,17 @@ public class MainActivity extends AppCompatActivity {
         addTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View event) {
-                // go to the other activity
-                // Create the intent to go to that activity and start it!
-                Log.i()
                 Intent goToAddTask = new Intent(MainActivity.this, AddATask.class);
                 MainActivity.this.startActivity(goToAddTask);
             }
         });
 
         Button allTasks = findViewById(R.id.allTasks);
-        addTask.setOnClickListener(new View.OnClickListener() {
+        allTasks.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent goToAllTasks = new Intent(MainActivity.this, AllTasks.class);
+                MainActivity.this.startActivity(goToAllTasks);
 
             }
         });
