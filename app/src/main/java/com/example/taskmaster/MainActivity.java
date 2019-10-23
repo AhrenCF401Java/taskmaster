@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -35,5 +37,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button settings = findViewById(R.id.goToSettingsButton);
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent goToSettings = new Intent(MainActivity.this, SettingsPage.class);
+                MainActivity.this.startActivity(goToSettings);
+            }
+        });
     }
+
+    public void onTaskSelection(View view){
+        Button taskButton = findViewById(view.getId());
+        String buttonText = taskButton.getText().toString();
+        System.out.println("String is " + buttonText );
+        Intent goToDetailsPage = new Intent(MainActivity.this,DetailsPage.class);
+        goToDetailsPage.putExtra("task", buttonText);
+        MainActivity.this.startActivity(goToDetailsPage);
+    }
+
 }
