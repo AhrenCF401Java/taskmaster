@@ -12,7 +12,9 @@ public class DetailsPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details_page);
-        TextView title = getIntent().getStringExtra("task");
+        String task = getIntent().getStringExtra("task");
+        TextView title = findViewById(R.id.detailsTitle);
+        title.setText(task);
 
     }
 }
