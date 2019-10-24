@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 //        taskRecycler manager
         taskRecycler.setLayoutManager(new LinearLayoutManager(this));
 //        set adapter
-        taskRecycler.setAdapter(new TaskAdapter(this.tasks, this));
+        taskRecycler.setAdapter(new TaskAdapter(this.tasks, (TaskAdapter.OnTaskInteractionListener) this));
 
 
         Button addTask = findViewById(R.id.addTask);
