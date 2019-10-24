@@ -1,6 +1,8 @@
 package com.example.taskmaster;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,15 +12,35 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.LinkedList;
+import java.util.List;
+//TODO: add implements TaskAdapter.OnTaskInteractionListener
 public class MainActivity extends AppCompatActivity {
+
+    protected List<Task> tasks;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        this.tasks = new LinkedList<>();
+        tasks.add(new Task("Climb", "Train to climb 5-11a trad this summer"));
+        tasks.add(new Task("MTB", "Buy a shock Pump"));
+        tasks.add(new Task("Snowboard", "Wax your Boards!"));
+
+        RecyclerView  taskRecycler = findViewById(R.id.taskList);
+//        taskRecycler manager
+        taskRecycler.setLayoutManager(new LinearLayoutManager(this));
+//        set adapter
+        taskRecycler.setAdapter(new TaskAdapter(this.tasks, this));
+
 
         Button addTask = findViewById(R.id.addTask);
-        //        setup an eventlistener for addtask
+        //        setup an event listener for addtask
         addTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View event) {
