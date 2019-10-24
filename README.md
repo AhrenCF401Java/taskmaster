@@ -13,7 +13,7 @@
     <img src="./screenshots/addTaskDay1.png" width="200px">
 
 
-*   ## Day 2
+* ## Day 2
     * ### Added 4 buttons to the home screen that link to a Settings page and three tasks to choose from
         * All tasks are relient on a method that gets the button text and passes it to DetailsPage using a Labeled Intent
 
@@ -28,3 +28,21 @@
         * on submit a toast is shown and you are taken back to the home page.
 
     <img src="./screenshots/settingsDay2.png" width="200px">
+* ## Day 3
+    1. Created a Task class that has a:
+        * title
+            * getter
+            * setter
+        * body
+            * getter
+            * setter
+        * state.
+            * getter
+            * setter's of:
+                * setStateNew
+                * setStateCompleted
+                * setStateAssigned
+                * setStateInProgress
+
+
+
