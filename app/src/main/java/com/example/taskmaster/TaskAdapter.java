@@ -16,7 +16,10 @@ class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
     public List<Task> tasks;
     private OnTaskInteractionListener listener;
 
-    public TaskAdapter(List<Task> tasks, MainActivity listener)
+    public TaskAdapter(List<Task> tasks, OnTaskInteractionListener listener){
+        this.tasks = tasks;
+        this.listener = listener;
+    }
 
     public static class TaskViewHolder extends RecyclerView.ViewHolder{
 
@@ -27,7 +30,6 @@ class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
             super(itemView);
             this.taskTitleView = itemView.findViewById(R.id.taskTitle);
             this.somthingElseView = itemView.findViewById(R.id.somthingElse);
-
         }
     }
 
@@ -43,15 +45,14 @@ class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        if(position == 0){
-            holder.taskTitleView.setText("Ahren");
-        }else
-            holder.taskTitleView.setText("Everyone Else");
+        Task taskAtPosition = this.tasks.get(position);
+        holder.taskTitleView.setText(taskAtPosition.getTitle());
+        holder.taskTitleView.setText(taskAtPosition.getState());
     }
 
     @Override
     public int getItemCount() {
-        return 2;
+        return this.tasks.size();
     }
 
     public interface OnTaskInteractionListener{
