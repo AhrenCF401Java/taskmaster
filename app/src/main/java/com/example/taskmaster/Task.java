@@ -1,10 +1,30 @@
 package com.example.taskmaster;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity
 public class Task {
+    @ColumnInfo(name = "task_title") //sets the below vars for column data
     private String title;
     private String body;
     private String state;
 
+
+//  needed to auto gen ID # gor each entry
+    @PrimaryKey(autoGenerate = true)
+    private long id;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+//      Task constructor
     public Task(String title, String body) {
         this.title = title;
         this.body = body;
@@ -31,16 +51,8 @@ public class Task {
         return state;
     }
 
-    public void setStateNew() {
-        this.state = "New";
+    public void setState(String state) {
+        this.state = state;
     }
-    public void setStateCompleted() {
-        this.state = "Completed";
-    }
-    public void setStateAssigned() {
-        this.state = "Assigned";
-    }
-    public void setStateInProgress() {
-        this.state = "In Progress";
-    }
+
 }
