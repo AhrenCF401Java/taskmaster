@@ -3,6 +3,7 @@ package com.example.taskmaster;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
+import androidx.room.Room;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,11 +15,14 @@ import android.widget.Toast;
 
 public class AddATask extends AppCompatActivity {
 
+    private AppDatabase db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
 
+        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class,MainActivity.DATABASE_NAME).allowMainThreadQueries().build();
 
         Button submitTask = findViewById(R.id.submitTaskButton);
         submitTask.setOnClickListener(new View.OnClickListener() {
@@ -28,14 +32,8 @@ public class AddATask extends AppCompatActivity {
                 String title = taskTitleInput.getText().toString();
                 EditText taskBodyInput = findViewById(R.id.taskBodyInput);
                 String taskBody = taskBodyInput.getText().toString();
-
-//                store the things in sharedPreferances
-//                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this)
-//
-//                SharedPreferences.Editor editor = prefs;
-
-//                grab the shared preferance
-//
+//                store in database
+                db.taskDao().addTask(new Task(title,taskBody));
                 Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
             }
         });
