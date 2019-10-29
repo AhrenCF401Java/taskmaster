@@ -29,10 +29,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     protected void onResume() {
         super.onResume();
         // grab username from sharedprefs and use it to update the label
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String username = prefs.getString("username", "user");
-//        TextView nameTextView = findViewById(R.id.);
-//        nameTextView.setText("Hi, " + username + "!");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String username = prefs.getString("user","user");
+        TextView nameTextView = findViewById(R.id.welcome);
+        nameTextView.setText("Hi, " + username + "!");
 //
         renderDatabaseOnRecycledView();
 
@@ -42,11 +42,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+//  sets up the recycler view.
         renderDatabaseOnRecycledView();
 
         Button addTask = findViewById(R.id.addTask);
-        //        setup an event listener for addtask
+//  setup an event listener for addtask
         addTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View event) {
@@ -80,17 +80,17 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
 
-    private void renderDatabaseOnRecycledView(){
-        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();
-        this.tasks = new LinkedList<>();
-        this.tasks.addAll(db.taskDao().getAll());
+        private void renderDatabaseOnRecycledView(){
+            db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();
+            this.tasks = new LinkedList<>();
+            this.tasks.addAll(db.taskDao().getAll());
 
-        final RecyclerView  taskRecycler = findViewById(R.id.taskList);
-//        taskRecycler manager
-        taskRecycler.setLayoutManager(new LinearLayoutManager(this));
-//        set adapter
-        taskRecycler.setAdapter(new TaskAdapter(tasks,  this));
-    }
+            final RecyclerView  taskRecycler = findViewById(R.id.taskList);
+    //        taskRecycler manager
+            taskRecycler.setLayoutManager(new LinearLayoutManager(this));
+    //        set adapter
+            taskRecycler.setAdapter(new TaskAdapter(tasks,  this));
+        }
 
 
     public void onTaskSelection(View view){

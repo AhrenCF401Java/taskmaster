@@ -35,8 +35,8 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
-        android:layout_marginLeft="80dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
         android:text="My Tasks"
         android:textSize="25dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,8 +46,8 @@
         android:id="@+id/goToSettingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="52dp"
-        android:layout_marginLeft="52dp"
+        android:layout_marginStart="180dp"
+        android:layout_marginLeft="180dp"
         android:text="Settings"
         app:layout_constraintBottom_toBottomOf="@+id/textView"
         app:layout_constraintStart_toEndOf="@+id/textView"
@@ -62,5 +62,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/welcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="@+id/goToSettingsButton"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        tools:layout_editor_absoluteY="59dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
