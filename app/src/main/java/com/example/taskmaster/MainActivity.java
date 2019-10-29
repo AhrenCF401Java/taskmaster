@@ -1,5 +1,6 @@
 package com.example.taskmaster;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -10,6 +11,7 @@ import androidx.room.RoomDatabase;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,11 +19,26 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
-    protected List<Task> tasks;
+    protected LinkedList<Task> tasks;
     public AppDatabase db;
     public static final String DATABASE_NAME = "task_to_do";
 
@@ -80,18 +97,63 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
 
-        private void renderDatabaseOnRecycledView(){
-            db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();
-            this.tasks = new LinkedList<>();
-            this.tasks.addAll(db.taskDao().getAll());
 
-            final RecyclerView  taskRecycler = findViewById(R.id.taskList);
-    //        taskRecycler manager
-            taskRecycler.setLayoutManager(new LinearLayoutManager(this));
-    //        set adapter
-            taskRecycler.setAdapter(new TaskAdapter(tasks,  this));
+
+
+
+
+
+
+    private final OkHttpClient client = new OkHttpClient();
+
+    public void getData() throws Exception {
+        Request request = new Request.Builder()
+                .url("https://taskmaster-api.herokuapp.com/tasks")
+                .build();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            client.newCall(request).enqueue(new Callback() {
+                @Override public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                }
+
+                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                @Override public void onResponse(Call call, Response response) throws IOException {
+                    try (ResponseBody responseBody = response.body()) {
+                        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+                        Headers responseHeaders = response.headers();
+                        for (int i = 0, size = responseHeaders.size(); i < size; i++) {
+                            System.out.println(responseHeaders.name(i) + ": " + responseHeaders.value(i));
+                        }
+
+                        String responseB = response.body().string();
+                        Gson gson = new Gson();
+                        Type taskBag = new TypeToken<List<Task>>(){}.getType();
+                        tasks = gson.fromJson(responseB,taskBag);
+                    }
+                }
+            });
         }
+    }
 
+
+    private void renderDatabaseOnRecycledView(){
+//        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();
+        this.tasks = new LinkedList<>();
+        try {
+            getData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        this.tasks.addAll(db.taskDao().getAll());
+
+        final RecyclerView  taskRecycler = findViewById(R.id.taskList);
+//        taskRecycler manager
+        taskRecycler.setLayoutManager(new LinearLayoutManager(this));
+//        set adapter
+        taskRecycler.setAdapter(new TaskAdapter(tasks,  this));
+    }
 
     public void onTaskSelection(View view){
         Button taskButton = findViewById(view.getId());
