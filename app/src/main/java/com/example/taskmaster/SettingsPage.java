@@ -24,7 +24,7 @@ public class SettingsPage extends AppCompatActivity {
         String username = usernameText.getText().toString();
 
 //        grab the correct shared pref folder
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 //        store it in shared prefs
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("name", username);
