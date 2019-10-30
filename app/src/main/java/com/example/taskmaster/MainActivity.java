@@ -13,6 +13,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +30,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -38,9 +42,11 @@ import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
-    protected LinkedList<Task> tasks;
+    AWSAppSyncClient mAWSAppSyncClient;
+    protected List<Task> tasks;
     public AppDatabase db;
     public static final String DATABASE_NAME = "task_to_do";
+    RecyclerView taskRecycler;
 
     @Override
     protected void onResume() {
@@ -61,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         setContentView(R.layout.activity_main);
 //  sets up the recycler view.
         renderDatabaseOnRecycledView();
+
+        getData();
 
         Button addTask = findViewById(R.id.addTask);
 //  setup an event listener for addtask
@@ -106,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private final OkHttpClient client = new OkHttpClient();
 
-    public void getData() throws Exception {
+    public void getData(){
         Request request = new Request.Builder()
                 .url("https://taskmaster-api.herokuapp.com/tasks")
                 .build();
@@ -122,15 +130,26 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     try (ResponseBody responseBody = response.body()) {
                         if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-                        Headers responseHeaders = response.headers();
-                        for (int i = 0, size = responseHeaders.size(); i < size; i++) {
-                            System.out.println(responseHeaders.name(i) + ": " + responseHeaders.value(i));
-                        }
+                        String responseB = responseBody.string();
 
-                        String responseB = response.body().string();
+                        System.out.println(responseB+"RESPONSE!!!");
                         Gson gson = new Gson();
-                        Type taskBag = new TypeToken<List<Task>>(){}.getType();
-                        tasks = gson.fromJson(responseB,taskBag);
+
+                        Type taskBag = new TypeToken<LinkedList<Task>>(){}.getType();
+                        LinkedList<Task> humm = gson.fromJson(responseB,taskBag);
+//                        move
+
+                        Handler handlerForMainThread = new Handler(Looper.getMainLooper()) {
+                            @Override
+                            public void handleMessage(Message inputMessage) {
+                                // grab data out of Message object and pass to actualMainActivityInstance
+//                                actualMainActivityInstance.putDataOnPage((String) inputMessage.obj);
+//
+//
+////TODO: tell the recycler view
+//                        Objects.requireNonNull(taskRecycler.getAdapter()).notifyDataSetChanged();
+                            }
+                        };
                     }
                 }
             });
@@ -138,17 +157,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
 
+
+
+
+
     private void renderDatabaseOnRecycledView(){
 //        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();
         this.tasks = new LinkedList<>();
-        try {
-            getData();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-//        this.tasks.addAll(db.taskDao().getAll());
 
-        final RecyclerView  taskRecycler = findViewById(R.id.taskList);
+//        this.tasks.addAll(db.taskDao().getAll());
+        taskRecycler = findViewById(R.id.taskList);
 //        taskRecycler manager
         taskRecycler.setLayoutManager(new LinearLayoutManager(this));
 //        set adapter
