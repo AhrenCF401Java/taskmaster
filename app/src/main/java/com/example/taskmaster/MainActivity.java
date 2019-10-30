@@ -22,6 +22,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
+import com.amazonaws.mobile.config.AWSConfiguration;
+import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -39,6 +42,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import type.CreateTaskInput;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
@@ -64,11 +68,19 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        Init app sync client
+        mAWSAppSyncClient = AWSAppSyncClient.builder()
+                .context(getApplicationContext())
+                .awsConfiguration(new AWSConfiguration(getApplicationContext()))
+                .build();
+
         setContentView(R.layout.activity_main);
 //  sets up the recycler view.
         renderDatabaseOnRecycledView();
 
         getData();
+
 
         Button addTask = findViewById(R.id.addTask);
 //  setup an event listener for addtask
@@ -103,13 +115,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             }
         });
     }
-
-
-
-
-
-
-
 
 
     private final OkHttpClient client = new OkHttpClient();
