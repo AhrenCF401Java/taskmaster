@@ -10,7 +10,7 @@ public class Task {
     private String title;
     private String body;
     private String state;
-
+    Team team;
 
 //  needed to auto gen ID # gor each entry
     @PrimaryKey(autoGenerate = true)

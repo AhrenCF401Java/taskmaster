@@ -68,8 +68,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         TextView nameTextView = findViewById(R.id.welcome);
         nameTextView.setText("Hi, " + username + "!");
 //
-//        getData();
-        getDataOkHTTP();
+        getData();
+//        getDataOkHTTP();
 
         renderDatabaseOnRecycledView();
 
