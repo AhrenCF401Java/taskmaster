@@ -68,7 +68,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         TextView nameTextView = findViewById(R.id.welcome);
         nameTextView.setText("Hi, " + username + "!");
 //
-        getData();
+//        getData();
+        getDataOkHTTP();
 
         renderDatabaseOnRecycledView();
 
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     public void onResponse(@Nonnull Response<ListTasksQuery.Data> response) {
                         List<ListTasksQuery.Item> responseItems = response.data().listTasks().items();
 
-                        final List<Task> tasks = new LinkedList<>();
+                        tasks = new LinkedList<>();
                         for (ListTasksQuery.Item item : responseItems){
                             Task task = new Task(item.title(),item.body());
                             tasks.add(task);
@@ -187,49 +188,50 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         goToDetailsPage.putExtra("task", task.getBody());
         MainActivity.this.startActivity(goToDetailsPage);
     }
+
+
+
+    private final OkHttpClient client = new OkHttpClient();
+
+    public void getDataOkHTTP() {
+        Request request = new Request.Builder()
+                .url("https://taskmaster-api.herokuapp.com/tasks")
+                .build();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                }
+
+                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                @Override
+                public void onResponse(Call call, okhttp3.Response response) throws IOException {
+                    try (ResponseBody responseBody = response.body()) {
+                        if (!response.isSuccessful())
+                            throw new IOException("Unexpected code " + response);
+
+                        String responseB = responseBody.string();
+
+                        System.out.println(responseB + "RESPONSE!!!");
+                        Gson gson = new Gson();
+
+                        Type taskBag = new TypeToken<LinkedList<Task>>(){}.getType();
+                        tasks = gson.fromJson(responseB, taskBag);
+
+                        Handler handlerForMainThread = new Handler(Looper.getMainLooper()) {
+                            @Override
+                            public void handleMessage(Message inputMessage) {
+                                // grab data out of Message object and pass to actualMainActivityInstance
+                                taskRecycler.setAdapter(new TaskAdapter(tasks, MainActivity.this));
+                            }
+//
+                        };
+                        handlerForMainThread.obtainMessage().sendToTarget();
+                    }
+                }
+            });
+        }
+    }
 }
-
-
-//    private final OkHttpClient client = new OkHttpClient();
-//
-//    public void getData(){
-//        Request request = new Request.Builder()
-//                .url("https://taskmaster-api.herokuapp.com/tasks")
-//                .build();
-//
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-//            client.newCall(request).enqueue(new Callback() {
-//                @Override public void onFailure(Call call, IOException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-//                @Override public void onResponse(Call call, Response response) throws IOException {
-//                    try (ResponseBody responseBody = response.body()) {
-//                        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//
-//                        String responseB = responseBody.string();
-//
-//                        System.out.println(responseB+"RESPONSE!!!");
-//                        Gson gson = new Gson();
-//
-//                        Type taskBag = new TypeToken<LinkedList<Task>>(){}.getType();
-//                        LinkedList<Task> humm = gson.fromJson(responseB,taskBag);
-////                        move
-//
-//                        Handler handlerForMainThread = new Handler(Looper.getMainLooper()) {
-//                            @Override
-//                            public void handleMessage(Message inputMessage) {
-//                                // grab data out of Message object and pass to actualMainActivityInstance
-////                                actualMainActivityInstance.putDataOnPage((String) inputMessage.obj);
-////
-////
-//////TODO: tell the recycler view
-////                        Objects.requireNonNull(taskRecycler.getAdapter()).notifyDataSetChanged();
-//                            }
-//                        };
-//                    }
-//                }
-//            });
-//        }
-//    }
