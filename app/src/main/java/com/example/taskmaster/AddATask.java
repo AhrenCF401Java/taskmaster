@@ -15,11 +15,16 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
+import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
+import com.apollographql.apollo.GraphQLCall;
+import com.apollographql.apollo.exception.ApolloException;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+
+import javax.annotation.Nonnull;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,6 +46,11 @@ public class AddATask extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
 
+        mAWSAppSyncClient = AWSAppSyncClient.builder()
+                .context(getApplicationContext())
+                .awsConfiguration(new AWSConfiguration(getApplicationContext()))
+                .build();
+
         db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class,MainActivity.DATABASE_NAME).allowMainThreadQueries().build();
 
         Button submitTask = findViewById(R.id.submitTaskButton);
@@ -53,17 +63,21 @@ public class AddATask extends AppCompatActivity {
                 EditText taskBodyInput = findViewById(R.id.taskBodyInput);
                 String taskBody = taskBodyInput.getText().toString();
 //                store in database
-                db.taskDao().addTask(new Task(title,taskBody));
+//                db.taskDao().addTask(new Task(title,taskBody));
+////
+////                store to remote DB
+//                try {
+//                    run(title,taskBody);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.failedToPost), Toast.LENGTH_SHORT).show();
+//                }
 //
-//                store to remote DB
-                try {
-                    run(title,taskBody);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.failedToPost), Toast.LENGTH_SHORT).show();
-                }
+//                Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
 
-                Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
+
+//                Store in AWS
+                taskMutation(title,taskBody);
             }
         });
 
@@ -72,12 +86,23 @@ public class AddATask extends AppCompatActivity {
     public void taskMutation(String title, String body){
         CreateTaskInput createTaskInput = CreateTaskInput.builder()
                 .title(title)
-                .body(body)
+                .body(body )
                 .state("New")
                 .build();
-
+//gets data from Dynamo db
         mAWSAppSyncClient.mutate(CreateTaskMutation.builder().input(createTaskInput).build())
-                .enqueue(mutationCallback);
+                .enqueue(new GraphQLCall.Callback<CreateTaskMutation.Data>() {
+                    @Override
+//                    what happens on response
+                    public void onResponse(@Nonnull com.apollographql.apollo.api.Response<CreateTaskMutation.Data> response) {
+                        Log.i("Add Task", "Posted");
+                    }
+
+                    @Override
+                    public void onFailure(@Nonnull ApolloException e) {
+
+                    }
+                });
     }
 
 
