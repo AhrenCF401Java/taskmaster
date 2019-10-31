@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 public class SettingsPage extends AppCompatActivity {
@@ -32,10 +33,27 @@ public class SettingsPage extends AppCompatActivity {
         Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
         finish();
 
-//        display a toast
-//        return to home
+    }
+//    https://developer.android.com/guide/topics/ui/controls/radiobutton#java
+    public void onRadioButtonClicked(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
 
-
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.team1:
+                if (checked)
+                    // Pirates are the best
+                    break;
+            case R.id.team2:
+                if (checked)
+                    // Ninjas rule
+                    break;
+            case R.id.team3:
+                if (checked)
+                    // Ninjas rule
+                    break;
+        }
     }
 }
 
