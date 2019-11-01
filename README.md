@@ -44,5 +44,21 @@
                 * setStateAssigned
                 * setStateInProgress
 
+* ## Day today
+
+* ## Day today
+
+* ## Day today
+
+* ## Day today
+
+
+* ## Day today
+    1. Added Team Class
+        * team name
+        * team List of tasks
+    2. Added radio button group to settings
+    3.
+
 
 

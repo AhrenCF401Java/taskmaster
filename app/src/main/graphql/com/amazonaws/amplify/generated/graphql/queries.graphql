@@ -1,9 +1,17 @@
 # this is an auto generated file. This will be overwritten
 query GetTask($id: ID!) {
   getTask(id: $id) {
+    id
     title
     body
     state
+    team {
+      id
+      name
+      teamTasks {
+        nextToken
+      }
+    }
   }
 }
 query ListTasks(
@@ -13,9 +21,45 @@ query ListTasks(
 ) {
   listTasks(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
+      id
       title
       body
       state
+      team {
+        id
+        name
+      }
+    }
+    nextToken
+  }
+}
+query GetTeam($id: ID!) {
+  getTeam(id: $id) {
+    id
+    name
+    teamTasks {
+      items {
+        id
+        title
+        body
+        state
+      }
+      nextToken
+    }
+  }
+}
+query ListTeams(
+  $filter: ModelTeamFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listTeams(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      name
+      teamTasks {
+        nextToken
+      }
     }
     nextToken
   }

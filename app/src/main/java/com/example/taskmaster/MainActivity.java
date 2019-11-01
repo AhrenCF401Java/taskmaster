@@ -22,9 +22,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
+import com.amazonaws.amplify.generated.graphql.CreateTeamMutation;
 import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
+import com.amazonaws.amplify.generated.graphql.ListTeamsQuery;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers;
@@ -33,6 +36,8 @@ import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -50,6 +55,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
 import type.CreateTaskInput;
+import type.CreateTeamInput;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
@@ -68,8 +74,12 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         TextView nameTextView = findViewById(R.id.welcome);
         nameTextView.setText("Hi, " + username + "!");
 //
-//        getData();
-        getDataOkHTTP();
+        teamMutation("Llama Socks");
+        teamMutation("Shark Attack Reminants");
+        teamMutation("Industrial Byproducts");
+
+        getData();
+//        getDataOkHTTP();
 
         renderDatabaseOnRecycledView();
 
@@ -130,19 +140,22 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         mAWSAppSyncClient.query(ListTasksQuery.builder().build())
                 .responseFetcher(AppSyncResponseFetchers.CACHE_AND_NETWORK)
                 .enqueue(new GraphQLCall.Callback<ListTasksQuery.Data>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
 //                    creates a list of tasks from the data that is received
                     public void onResponse(@Nonnull Response<ListTasksQuery.Data> response) {
-                        List<ListTasksQuery.Item> responseItems = response.data().listTasks().items();
+                        assert response.data() != null;
+                        List<ListTasksQuery.Item> responseItems = Objects.requireNonNull(response.data().listTasks()).items();
 
                         tasks = new LinkedList<>();
+                        assert responseItems != null;
                         for (ListTasksQuery.Item item : responseItems){
                             Task task = new Task(item.title(),item.body());
                             tasks.add(task);
                         }
 //                        Render it to the recycler view
                         Handler handler = new Handler(Looper.getMainLooper()) {
-                            public void handleMessage(Message inputMessage){
+                            public void handleMessage(@NotNull Message inputMessage){
                                 taskRecycler.setAdapter(new TaskAdapter(tasks, MainActivity.this));
                             }
 
@@ -158,7 +171,24 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
 
+    public void teamMutation(final String team){
+        CreateTeamInput createTeamInput = CreateTeamInput.builder()
+                .name(team)
+                .build();
+//gets data from Dynamo db
+        mAWSAppSyncClient.mutate(CreateTeamMutation.builder().input(createTeamInput).build())
+                .enqueue(new GraphQLCall.Callback<CreateTeamMutation.Data>(){
+                    @Override
+                    public void onResponse(@Nonnull Response<CreateTeamMutation.Data> response) {
+                        
+                    }
 
+                    @Override
+                    public void onFailure(@Nonnull ApolloException e) {
+
+                    }
+                });
+    }
 
     private void renderDatabaseOnRecycledView(){
 //        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();

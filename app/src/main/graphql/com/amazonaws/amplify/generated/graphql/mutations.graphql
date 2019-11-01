@@ -1,22 +1,91 @@
 # this is an auto generated file. This will be overwritten
 mutation CreateTask($input: CreateTaskInput!) {
   createTask(input: $input) {
+    id
     title
     body
     state
+    team {
+      id
+      name
+      teamTasks {
+        nextToken
+      }
+    }
   }
 }
 mutation UpdateTask($input: UpdateTaskInput!) {
   updateTask(input: $input) {
+    id
     title
     body
     state
+    team {
+      id
+      name
+      teamTasks {
+        nextToken
+      }
+    }
   }
 }
 mutation DeleteTask($input: DeleteTaskInput!) {
   deleteTask(input: $input) {
+    id
     title
     body
     state
+    team {
+      id
+      name
+      teamTasks {
+        nextToken
+      }
+    }
+  }
+}
+mutation CreateTeam($input: CreateTeamInput!) {
+  createTeam(input: $input) {
+    id
+    name
+    teamTasks {
+      items {
+        id
+        title
+        body
+        state
+      }
+      nextToken
+    }
+  }
+}
+mutation UpdateTeam($input: UpdateTeamInput!) {
+  updateTeam(input: $input) {
+    id
+    name
+    teamTasks {
+      items {
+        id
+        title
+        body
+        state
+      }
+      nextToken
+    }
+  }
+}
+mutation DeleteTeam($input: DeleteTeamInput!) {
+  deleteTeam(input: $input) {
+    id
+    name
+    teamTasks {
+      items {
+        id
+        title
+        body
+        state
+      }
+      nextToken
+    }
   }
 }
