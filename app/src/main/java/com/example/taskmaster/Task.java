@@ -4,15 +4,18 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
+
 @Entity
 public class Task {
     @ColumnInfo(name = "task_title") //sets the below vars for column data
     private String title;
     private String body;
     private String state;
-    Team team;
 
-//  needed to auto gen ID # gor each entry
+
+
+    //  needed to auto gen ID # gor each entry
     @PrimaryKey(autoGenerate = true)
     private long id;
 
@@ -29,6 +32,7 @@ public class Task {
         this.title = title;
         this.body = body;
         this.state = "New";
+
     }
 
     public String getTitle() {

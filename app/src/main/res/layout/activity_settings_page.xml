@@ -43,7 +43,7 @@
         <RadioButton
             android:id="@+id/team1"
             android:layout_width="match_parent"
-            android:layout_height="75"
+            android:layout_height="75dp"
             android:text="Team 1"
             tools:layout_editor_absoluteX="155dp"
             tools:layout_editor_absoluteY="390dp" />
