@@ -3,10 +3,11 @@ type Task @model {
   title: String!
   body: String!
   state: String!
-  team: Team @connection(name:"Team")
+  team: Team @connection(name:"Teamlist")
 }
 type Team @model {
   id: ID!
   name: String!
-  teamTasks: [Task] @connection(name:"Team")
+  teamTasks: [Task] @connection(name:"Teamlist")
 }
+

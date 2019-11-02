@@ -22,12 +22,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
 import com.amazonaws.amplify.generated.graphql.CreateTeamMutation;
 import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
-import com.amazonaws.amplify.generated.graphql.ListTeamsQuery;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers;
@@ -36,8 +34,6 @@ import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -74,14 +70,12 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         TextView nameTextView = findViewById(R.id.welcome);
         nameTextView.setText("Hi, " + username + "!");
 //
-        teamMutation("Llama Socks");
-        teamMutation("Shark Attack Reminants");
-        teamMutation("Industrial Byproducts");
-
         getData();
+        teamMutation("Eagles");
+
 //        getDataOkHTTP();
 
-        renderDatabaseOnRecycledView();
+
 
 
     }
@@ -133,44 +127,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             }
         });
     }
-
-
-// gets all data from AWS
-    public void getData(){
-        mAWSAppSyncClient.query(ListTasksQuery.builder().build())
-                .responseFetcher(AppSyncResponseFetchers.CACHE_AND_NETWORK)
-                .enqueue(new GraphQLCall.Callback<ListTasksQuery.Data>() {
-                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                    @Override
-//                    creates a list of tasks from the data that is received
-                    public void onResponse(@Nonnull Response<ListTasksQuery.Data> response) {
-                        assert response.data() != null;
-                        List<ListTasksQuery.Item> responseItems = Objects.requireNonNull(response.data().listTasks()).items();
-
-                        tasks = new LinkedList<>();
-                        assert responseItems != null;
-                        for (ListTasksQuery.Item item : responseItems){
-                            Task task = new Task(item.title(),item.body());
-                            tasks.add(task);
-                        }
-//                        Render it to the recycler view
-                        Handler handler = new Handler(Looper.getMainLooper()) {
-                            public void handleMessage(@NotNull Message inputMessage){
-                                taskRecycler.setAdapter(new TaskAdapter(tasks, MainActivity.this));
-                            }
-
-                        };
-                        handler.obtainMessage().sendToTarget();
-                    }
-
-                    @Override
-                    public void onFailure(@Nonnull ApolloException e) {
-
-                    }
-                });
-    }
-
-
     public void teamMutation(final String team){
         CreateTeamInput createTeamInput = CreateTeamInput.builder()
                 .name(team)
@@ -180,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                 .enqueue(new GraphQLCall.Callback<CreateTeamMutation.Data>(){
                     @Override
                     public void onResponse(@Nonnull Response<CreateTeamMutation.Data> response) {
-                        
+
                     }
 
                     @Override
@@ -189,6 +145,43 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     }
                 });
     }
+
+    // gets all data from AWS
+    public void getData(){
+        mAWSAppSyncClient.query(ListTasksQuery.builder().build())
+                .responseFetcher(AppSyncResponseFetchers.NETWORK_FIRST)
+                .enqueue(new GraphQLCall.Callback<ListTasksQuery.Data>() {
+                    @Override
+//                    creates a list of tasks from the data that is received
+                    public void onResponse(@Nonnull Response<ListTasksQuery.Data> response) {
+                        tasks = new LinkedList<>();
+                        System.out.println(response.data().toString() + "SAMARI");
+                        if (response.data().listTasks() != null){
+                            List<ListTasksQuery.Item> responseItems = response.data().listTasks().items();
+                        for (ListTasksQuery.Item item : responseItems) {
+                            Task task = new Task(item.title(), item.body());
+                            tasks.add(task);
+                        }
+//                        Render it to the recycler view
+                        Handler handler = new Handler(Looper.getMainLooper()) {
+                            public void handleMessage(Message inputMessage) {
+                                taskRecycler.setAdapter(new TaskAdapter(tasks, MainActivity.this));
+                            }
+
+                        };
+                        handler.obtainMessage().sendToTarget();
+                      }
+                    }
+
+                    @Override
+                    public void onFailure(@Nonnull ApolloException e) {
+
+                    }
+                });
+    }
+
+
+
 
     private void renderDatabaseOnRecycledView(){
 //        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, DATABASE_NAME).allowMainThreadQueries().build();
