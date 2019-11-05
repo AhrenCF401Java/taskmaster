@@ -7,7 +7,7 @@ android {
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.example.taskmaster"
-        minSdkVersion 15
+        minSdkVersion 23
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -26,11 +26,21 @@ dependencies {
     implementation 'com.amazonaws:aws-android-sdk-core:2.15.+'
     //AppSync SDK
     implementation 'com.amazonaws:aws-android-sdk-appsync:2.8.+'
+    //For AWSMobileClient only:
+    implementation 'com.amazonaws:aws-android-sdk-mobile-client:2.15.+'
+
+    //For the drop-in UI also:
+    implementation 'com.amazonaws:aws-android-sdk-auth-userpools:2.15.+'
+    implementation 'com.amazonaws:aws-android-sdk-auth-ui:2.15.+'
+
+
+
+
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 
     def room_version = "2.2.1"
-// database dependencies
+    // database dependencies
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
