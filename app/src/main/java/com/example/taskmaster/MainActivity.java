@@ -26,6 +26,8 @@ import android.widget.TextView;
 import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
 import com.amazonaws.amplify.generated.graphql.CreateTeamMutation;
 import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.UserStateDetails;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers;
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         nameTextView.setText("Hi, " + username + "!");
 //
         getData();
-        teamMutation("Eagles");
+        teamMutation("Happy Pandas");
 
 //        getDataOkHTTP();
 
@@ -83,6 +85,20 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AWSMobileClient.getInstance().initialize(getApplicationContext(), new com.amazonaws.mobile.client.Callback<UserStateDetails>() {
+
+                    @Override
+                    public void onResult(UserStateDetails userStateDetails) {
+                        Log.i("INIT", "onResult: " + userStateDetails.getUserState());
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e("INIT", "Initialization error.", e);
+                    }
+                }
+        );
 
 //        Init app sync client
         mAWSAppSyncClient = AWSAppSyncClient.builder()
