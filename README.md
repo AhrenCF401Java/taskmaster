@@ -13,6 +13,11 @@
     <img src="./screenshots/addTaskDay1.png" width="200px">
 
 
+
+
+
+
+
 * ## Day 2
     * ### Added 4 buttons to the home screen that link to a Settings page and three tasks to choose from
         * All tasks are relient on a method that gets the button text and passes it to DetailsPage using a Labeled Intent
@@ -28,6 +33,12 @@
         * on submit a toast is shown and you are taken back to the home page.
 
     <img src="./screenshots/settingsDay2.png" width="200px">
+
+
+
+
+
+
 * ## Day 3
     1. Created a Task class that has a:
         * title
@@ -59,6 +70,12 @@
         * team List of tasks
     2. Added radio button group to settings
     3.
+
+
+* ## Day today
+    1. Added AWS Cognito to  manage Auth
+        * logs status of user, logged in / not logged in.
+        *
 
 
 

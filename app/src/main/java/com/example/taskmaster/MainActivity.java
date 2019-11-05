@@ -27,6 +27,7 @@ import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
 import com.amazonaws.amplify.generated.graphql.CreateTeamMutation;
 import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
 import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.SignInUIOptions;
 import com.amazonaws.mobile.client.UserStateDetails;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
@@ -65,22 +66,34 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     protected void onResume() {
+        final Button authButton = findViewById(R.id.authButton);
+        final TextView username = findViewById(R.id.usernameDisplay);
+
+        if(AWSMobileClient.getInstance().isSignedIn()){
+            authButton.setText("Sign Out " + AWSMobileClient.getInstance().getUsername());
+            username.setText(AWSMobileClient.getInstance().getUsername());
+        }else{
+            authButton.setText("Sign In");
+            username.setText("");
+
+        }
+
         super.onResume();
         // grab username from sharedprefs and use it to update the label
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String username = prefs.getString("user","user");
-        TextView nameTextView = findViewById(R.id.welcome);
-        nameTextView.setText("Hi, " + username + "!");
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+//        String username = prefs.getString("user", "user");
+//        TextView nameTextView = findViewById(R.id.usernameDisplay);
+//        nameTextView.setText("Hi, " + username + "!");
 //
         getData();
         teamMutation("Happy Pandas");
 
 //        getDataOkHTTP();
-
-
-
-
     }
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     }
                 }
         );
-
 //        Init app sync client
         mAWSAppSyncClient = AWSAppSyncClient.builder()
                 .context(getApplicationContext())
@@ -107,11 +119,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                 .build();
 
         setContentView(R.layout.activity_main);
-//  sets up the recycler view.
+//       sets up the recycler view.
         renderDatabaseOnRecycledView();
 
         Button addTask = findViewById(R.id.addTask);
-//  setup an event listener for addtask
+//      setup an event listener for addtask
         addTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View event) {
@@ -119,8 +131,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                 MainActivity.this.startActivity(goToAddTask);
             }
         });
-
-
 
         Button allTasks = findViewById(R.id.allTasks);
         allTasks.setOnClickListener(new View.OnClickListener() {
@@ -131,9 +141,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             }
         });
 
-
-
-
         Button settings = findViewById(R.id.goToSettingsButton);
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,7 +149,38 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                 MainActivity.this.startActivity(goToSettings);
             }
         });
+
+        final Button authButton = findViewById(R.id.authButton);
+        authButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(AWSMobileClient.getInstance().isSignedIn()) {
+                    AWSMobileClient.getInstance().signOut();
+                    authButton.setText("Sign In");
+                }else{
+                    AWSMobileClient.getInstance().showSignIn(MainActivity.this,
+                            SignInUIOptions.builder().build(),
+                            new com.amazonaws.mobile.client.Callback<UserStateDetails>() {
+                                @Override
+                                public void onResult(UserStateDetails result) {
+
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+
+                                }
+                            });
+
+
+
+                }
+
+            }
+        });
     }
+
+
     public void teamMutation(final String team){
         CreateTeamInput createTeamInput = CreateTeamInput.builder()
                 .name(team)
