@@ -1,18 +1,19 @@
 package com.example.taskmaster;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceManager;
-import androidx.room.Room;
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
 import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
 import com.amazonaws.mobile.config.AWSConfiguration;
@@ -37,6 +38,7 @@ import type.CreateTaskInput;
 
 public class AddATask extends AppCompatActivity {
 
+    private static final String TAG = "ahren.AddATask";
     private AppDatabase db;
     AWSAppSyncClient mAWSAppSyncClient;
 
@@ -45,6 +47,7 @@ public class AddATask extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
+
 
         mAWSAppSyncClient = AWSAppSyncClient.builder()
                 .context(getApplicationContext())
@@ -106,6 +109,44 @@ public class AddATask extends AppCompatActivity {
     }
 
 
+
+
+    private static final int READ_REQUEST_CODE = 42;
+    public void pickAFile(View v){
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*");
+        startActivityForResult(i, READ_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
+        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
+        // response to some other intent, and the code below shouldn't run at all.
+
+        super.onActivityResult(requestCode, resultCode, resultData);
+        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.
+            // Pull that URI using resultData.getData().
+            Uri uri = null;
+            if (resultData != null) {
+                uri = resultData.getData();
+                System.out.println("bUUUUUUUZZZZZZZZZZYYYYYY BEEEEEEEEEEEE");
+                Log.i(TAG, "Uri: " + uri.toString());
+            
+            }
+        }
+
+
+    }
+
+
+
     
 
 
@@ -148,4 +189,8 @@ public class AddATask extends AppCompatActivity {
                 }
             }
         }
+
+
+
+
 }
