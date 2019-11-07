@@ -1,19 +1,6 @@
 package com.example.taskmaster;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Database;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
-
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,10 +9,14 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.amazonaws.amplify.generated.graphql.CreateTeamMutation;
 import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
 import com.amazonaws.mobile.client.AWSMobileClient;
@@ -43,21 +34,19 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
-import type.CreateTaskInput;
 import type.CreateTeamInput;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
@@ -72,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String[] permissions = {READ_EXTERNAL_STORAGE};
+        ActivityCompat.requestPermissions(this, permissions, 1);
 
         getApplicationContext().startService(new Intent(getApplicationContext(), TransferService.class));
 
@@ -223,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                         if (response.data().listTasks() != null){
                             List<ListTasksQuery.Item> responseItems = response.data().listTasks().items();
                         for (ListTasksQuery.Item item : responseItems) {
-                            Task task = new Task(item.title(), item.body());
+                            Task task = new Task(item.title(), item.body(),item.state());
                             tasks.add(task);
                         }
 //                        Render it to the recycler view
@@ -265,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         Button taskButton = findViewById(view.getId());
         String buttonText = taskButton.getText().toString();
         System.out.println("String is " + buttonText );
+
         Intent goToDetailsPage = new Intent(MainActivity.this,DetailsPage.class);
         goToDetailsPage.putExtra("task", buttonText);
         MainActivity.this.startActivity(goToDetailsPage);

@@ -4,14 +4,13 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
-
 @Entity
 public class Task {
     @ColumnInfo(name = "task_title") //sets the below vars for column data
     private String title;
     private String body;
     private String state;
+    private String s3key;
 
 
 
@@ -31,6 +30,13 @@ public class Task {
     public Task(String title, String body) {
         this.title = title;
         this.body = body;
+        this.state = "New";
+
+    }
+    public Task(String title, String body, String s3key) {
+        this.title = title;
+        this.body = body;
+        this.s3key = s3key;
         this.state = "New";
 
     }
