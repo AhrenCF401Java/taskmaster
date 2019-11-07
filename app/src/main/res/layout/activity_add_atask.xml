@@ -21,8 +21,8 @@
 
     <EditText
         android:id="@+id/taskBodyInput"
-        android:layout_width="330dp"
-        android:layout_height="376dp"
+        android:layout_width="334dp"
+        android:layout_height="274dp"
         android:layout_marginTop="48dp"
         android:ems="10"
         android:gravity="start|top"
@@ -40,15 +40,21 @@
         android:text="Submit"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/taskBodyInput" />
+        app:layout_constraintTop_toBottomOf="@+id/taskBodyInput"
+        app:layout_constraintVertical_bias="0.893" />
 
-    <TextView
-        android:id="@+id/submittedConfirmationText"
-        android:layout_width="3dp"
-        android:layout_height="6dp"
+    <Button
+        android:id="@+id/attachButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="pickAFile"
+        android:text="Add an attachment"
         app:layout_constraintBottom_toTopOf="@+id/submitTaskButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/taskBodyInput" />
+        app:layout_constraintEnd_toEndOf="@+id/taskBodyInput"
+        app:layout_constraintStart_toStartOf="@+id/taskBodyInput"
+        app:layout_constraintTop_toBottomOf="@+id/taskBodyInput"
+        app:layout_constraintVertical_bias="0.302" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

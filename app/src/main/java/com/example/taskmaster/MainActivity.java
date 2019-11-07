@@ -1,17 +1,6 @@
 package com.example.taskmaster;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Database;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
-
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,10 +9,14 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.amazonaws.amplify.generated.graphql.CreateTeamMutation;
 import com.amazonaws.amplify.generated.graphql.ListTasksQuery;
 import com.amazonaws.mobile.client.AWSMobileClient;
@@ -32,6 +25,7 @@ import com.amazonaws.mobile.client.UserStateDetails;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferService;
 import com.apollographql.apollo.GraphQLCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
@@ -40,64 +34,38 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
-import type.CreateTaskInput;
 import type.CreateTeamInput;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
+    private static final String TAG = "ahren.taskmaster" ;
     AWSAppSyncClient mAWSAppSyncClient;
     protected List<Task> tasks;
     public AppDatabase db;
     public static final String DATABASE_NAME = "task_to_do";
     RecyclerView taskRecycler;
 
-    @Override
-    protected void onResume() {
-        final Button authButton = findViewById(R.id.authButton);
-        final TextView username = findViewById(R.id.usernameDisplay);
-
-        if(AWSMobileClient.getInstance().isSignedIn()){
-            authButton.setText("Sign Out " + AWSMobileClient.getInstance().getUsername());
-            username.setText(AWSMobileClient.getInstance().getUsername());
-        }else{
-            authButton.setText("Sign In");
-            username.setText("");
-
-        }
-
-        super.onResume();
-        // grab username from sharedprefs and use it to update the label
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-//        String username = prefs.getString("user", "user");
-//        TextView nameTextView = findViewById(R.id.usernameDisplay);
-//        nameTextView.setText("Hi, " + username + "!");
-//
-        getData();
-        teamMutation("Happy Pandas");
-
-//        getDataOkHTTP();
-    }
-
-
-
-
+//      *************************************** On Create *****************************************
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String[] permissions = {READ_EXTERNAL_STORAGE};
+        ActivityCompat.requestPermissions(this, permissions, 1);
+
+        getApplicationContext().startService(new Intent(getApplicationContext(), TransferService.class));
 
         AWSMobileClient.getInstance().initialize(getApplicationContext(), new com.amazonaws.mobile.client.Callback<UserStateDetails>() {
 
@@ -171,16 +139,46 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
                                 }
                             });
-
-
-
                 }
-
             }
         });
     }
 
 
+
+
+
+//  *************************************** On Resume  ********************************************
+    @Override
+    protected void onResume() {
+        final Button authButton = findViewById(R.id.authButton);
+        final TextView username = findViewById(R.id.usernameDisplay);
+
+        if(AWSMobileClient.getInstance().isSignedIn()){
+            authButton.setText("Sign Out " + AWSMobileClient.getInstance().getUsername());
+            username.setText(AWSMobileClient.getInstance().getUsername());
+        }else{
+            authButton.setText("Sign In");
+            username.setText("");
+
+        }
+
+        super.onResume();
+        // grab username from sharedprefs and use it to update the label
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+//        String username = prefs.getString("user", "user");
+//        TextView nameTextView = findViewById(R.id.usernameDisplay);
+//        nameTextView.setText("Hi, " + username + "!");
+//
+        getData();
+
+
+//        getDataOkHTTP();
+    }
+
+
+//    add a n area in setting to add teams add a spinner to select team and add tasks for that team only
     public void teamMutation(final String team){
         CreateTeamInput createTeamInput = CreateTeamInput.builder()
                 .name(team)
@@ -200,7 +198,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                 });
     }
 
-    // gets all data from AWS
+
+
+
+
+//    gets all data from AWS
     public void getData(){
         mAWSAppSyncClient.query(ListTasksQuery.builder().build())
                 .responseFetcher(AppSyncResponseFetchers.NETWORK_FIRST)
@@ -213,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                         if (response.data().listTasks() != null){
                             List<ListTasksQuery.Item> responseItems = response.data().listTasks().items();
                         for (ListTasksQuery.Item item : responseItems) {
-                            Task task = new Task(item.title(), item.body());
+                            Task task = new Task(item.title(), item.body(),item.state());
                             tasks.add(task);
                         }
 //                        Render it to the recycler view
@@ -248,14 +250,21 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         taskRecycler.setAdapter(new TaskAdapter(tasks,  this));
     }
 
+
+
+
     public void onTaskSelection(View view){
         Button taskButton = findViewById(view.getId());
         String buttonText = taskButton.getText().toString();
         System.out.println("String is " + buttonText );
+
         Intent goToDetailsPage = new Intent(MainActivity.this,DetailsPage.class);
         goToDetailsPage.putExtra("task", buttonText);
         MainActivity.this.startActivity(goToDetailsPage);
     }
+
+
+
 
     @Override
     public void taskCommand(Task task) {
@@ -268,8 +277,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
 
 
-    private final OkHttpClient client = new OkHttpClient();
 
+
+    private final OkHttpClient client = new OkHttpClient();
     public void getDataOkHTTP() {
         Request request = new Request.Builder()
                 .url("https://taskmaster-api.herokuapp.com/tasks")
