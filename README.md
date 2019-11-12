@@ -85,6 +85,23 @@
 
     3.
 
+* ## Day 11/12/19 Lab 40: Notifications
+
+* References
+    * https://aws-amplify.github.io/docs/android/push-notifications
+
+    1. Added pinpoint dependencies and Firebase dependencies.
+
+    2. Created classes and methods called for by the above reference
+
+    ![]("./screenshots/settingsDay2.png" width="200px")
+
+
+
+
+*## Day 11/12/19 Lab 41: intent
+* TODO re-watch demo and reread intents
+implement intents.
 
 
 

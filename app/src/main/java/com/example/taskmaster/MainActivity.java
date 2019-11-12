@@ -69,7 +69,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        getPinpointManager(getApplicationContext());
+
         String[] permissions = {READ_EXTERNAL_STORAGE};
+
         ActivityCompat.requestPermissions(this, permissions, 1);
 
         getApplicationContext().startService(new Intent(getApplicationContext(), TransferService.class));
@@ -356,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             FirebaseInstanceId.getInstance().getInstanceId()
                     .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                         @Override
-                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<InstanceIdResult> task) {
                             if (!task.isSuccessful()) {
                                 Log.w(TAG, "getInstanceId failed", task.getException());
                                 return;
