@@ -225,6 +225,18 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "s3key",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "state",
                         "description": null,
                         "args": [],
@@ -392,6 +404,16 @@
                     },
                     {
                         "name": "body",
+                        "description": null,
+                        "type": {
+                            "kind": "INPUT_OBJECT",
+                            "name": "ModelStringFilterInput",
+                            "ofType": null
+                        },
+                        "defaultValue": null
+                    },
+                    {
+                        "name": "s3key",
                         "description": null,
                         "type": {
                             "kind": "INPUT_OBJECT",
@@ -1081,6 +1103,16 @@
                         "defaultValue": null
                     },
                     {
+                        "name": "s3key",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null
+                    },
+                    {
                         "name": "state",
                         "description": null,
                         "type": {
@@ -1141,6 +1173,16 @@
                     },
                     {
                         "name": "body",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null
+                    },
+                    {
+                        "name": "s3key",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",

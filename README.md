@@ -103,5 +103,7 @@
 * TODO re-watch demo and reread intents
 implement intents.
 
+*## Day 11/13/19 Lab 42: Location
+Todo add location to a task
 
 
