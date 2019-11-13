@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,20 +28,10 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.apollographql.apollo.GraphQLCall;
 import com.apollographql.apollo.exception.ApolloException;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
-import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import type.CreateTaskInput;
 
 public class AddATask extends AppCompatActivity {
@@ -75,21 +64,25 @@ public class AddATask extends AppCompatActivity {
                 final String title = taskTitleInput.getText().toString();
                 EditText taskBodyInput = findViewById(R.id.taskBodyInput);
                 final String taskBody = taskBodyInput.getText().toString();
-//                store in database
-//                db.taskDao().addTask(new Task(title,taskBody));
-////
-////                store to remote DB
-//                try {
-//                    run(title,taskBody);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.failedToPost), Toast.LENGTH_SHORT).show();
-//                }
+
+/*
+//                store in ROOM database
+                db.taskDao().addTask(new Task(title,taskBody));
 //
-//                Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
+//                store to remote DB
+                try {
+                    run(title,taskBody);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.failedToPost), Toast.LENGTH_SHORT).show();
+                }
+
+                Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
+*/
 
 
 //                Store in AWS
+//  https://docs.aws.amazon.com/aws-mobile/latest/developerguide/mobile-hub-add-aws-mobile-user-data-storage.html#mobile-hub-add-aws-user-data-storage-download
                 if(picturePath == null) {
                     taskMutation(title, taskBody);
                 }else{
@@ -116,10 +109,11 @@ public class AddATask extends AppCompatActivity {
                             if (TransferState.COMPLETED == state) {
                                 System.out.println("************************************************************\n"
                                         + uploadObserver.getBucket() + "\n"
-                                        + uploadObserver.getId() + "\n"
                                         + uploadObserver.getKey() + "\n"
                                         + "hello, its me your looking for *********************************************************************");
-                                taskMutation(title,taskBody);
+//                      Get the S3 Key and store in the task
+                                String s3 = uploadObserver.getKey();
+                                taskMutation(title,taskBody,s3);
                             }
                         }
 
@@ -165,7 +159,30 @@ public class AddATask extends AppCompatActivity {
                 });
     }
 
+    public void taskMutation(String title, String body,String s3key){
+        CreateTaskInput createTaskInput = CreateTaskInput.builder()
+                .title(title)
+                .body(body)
+                .s3key(s3key)
+                .state("New")
+                .build();
+//gets data from Dynamo db
+        mAWSAppSyncClient.mutate(CreateTaskMutation.builder().input(createTaskInput).build())
+                .enqueue(new GraphQLCall.Callback<CreateTaskMutation.Data>() {
+                    @Override
+//                    what happens on response
+                    public void onResponse(@Nonnull com.apollographql.apollo.api.Response<CreateTaskMutation.Data> response) {
+                        Log.i("Add Task", "Posted");
+                    }
 
+                    @Override
+                    public void onFailure(@Nonnull ApolloException e) {
+
+                    }
+                });
+    }
+
+//***************************************** Image picker ****************************************//
 
     private static final int READ_REQUEST_CODE = 42;
     public void pickAFile(View v){
@@ -205,49 +222,47 @@ public class AddATask extends AppCompatActivity {
     }
 
 
-//    public String rename()
-    
 
 
-    private final OkHttpClient client = new OkHttpClient();
+//    private final OkHttpClient client = new OkHttpClient();
+//
+//    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+//    public void run(String title, String body) throws Exception {
+//        RequestBody formBody = new FormBody.Builder()
+//                .add("title", title)
+//                .add("body", body)
+//                .build();
+//        Request request = new Request.Builder()
+//                .url("https://taskmaster-api.herokuapp.com/tasks")
+//                .post(formBody)
+//                .build();
+////        see what happend
+//        client.newCall(request).enqueue(new showTheResponseCallback());
+//    }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public void run(String title, String body) throws Exception {
-        RequestBody formBody = new FormBody.Builder()
-                .add("title", title)
-                .add("body", body)
-                .build();
-        Request request = new Request.Builder()
-                .url("https://taskmaster-api.herokuapp.com/tasks")
-                .post(formBody)
-                .build();
-//        see what happend
-        client.newCall(request).enqueue(new showTheResponseCallback());
-    }
 
-
-    class showTheResponseCallback implements Callback{
-
-        private static final String TAG = "taskmaster.Callback";
-
-        // OkHttp will call this if the request fails
-        @Override
-        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-            Log.e(TAG, "internet error");
-            Log.e(TAG, e.getMessage());
-        }
-
-        @Override
-        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.isSuccessful()){
-                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.storedInDB), Toast.LENGTH_SHORT).show();
-                }
-                if (!response.isSuccessful()){
-                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.failedToPost), Toast.LENGTH_SHORT).show();
-                    throw new IOException("Unexpected code " + response);
-                }
-            }
-        }
+//    class showTheResponseCallback implements Callback{
+//
+//        private static final String TAG = "taskmaster.Callback";
+//
+//        // OkHttp will call this if the request fails
+//        @Override
+//        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//            Log.e(TAG, "internet error");
+//            Log.e(TAG, e.getMessage());
+//        }
+//
+//        @Override
+//        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//                if (response.isSuccessful()){
+//                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.storedInDB), Toast.LENGTH_SHORT).show();
+//                }
+//                if (!response.isSuccessful()){
+//                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.failedToPost), Toast.LENGTH_SHORT).show();
+//                    throw new IOException("Unexpected code " + response);
+//                }
+//            }
+//        }
 
 
 
