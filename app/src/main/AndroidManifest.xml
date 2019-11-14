@@ -22,7 +22,6 @@
         <activity android:name=".SettingsPage" />
         <activity android:name=".DetailsPage" />
         <activity android:name=".AllTasks" />
-        <activity android:name=".AddATask" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

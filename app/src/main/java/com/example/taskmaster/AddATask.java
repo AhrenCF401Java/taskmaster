@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,6 +48,15 @@ public class AddATask extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
 
+
+        // Get the intent that started this activity
+        Intent intent = getIntent();
+        // Figure out what to do based on the intent type
+        if (intent.getType()!=null && intent.getType().equals("text/plain")){
+
+             EditText taskTitleInput = findViewById(R.id.taskTitleInput);
+             taskTitleInput.setText(intent.getStringExtra(Intent.EXTRA_TEXT));// Handle intents with text ...
+        }
 
         mAWSAppSyncClient = AWSAppSyncClient.builder()
                 .context(getApplicationContext())
@@ -150,6 +160,8 @@ public class AddATask extends AppCompatActivity {
 //                    what happens on response
                     public void onResponse(@Nonnull com.apollographql.apollo.api.Response<CreateTaskMutation.Data> response) {
                         Log.i("Add Task", "Posted");
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
+
                     }
 
                     @Override
