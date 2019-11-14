@@ -6,6 +6,7 @@ query GetTask($id: ID!) {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -27,6 +28,7 @@ query ListTasks(
       body
       s3key
       state
+      location
       team {
         id
         name
@@ -46,6 +48,7 @@ query GetTeam($id: ID!) {
         body
         s3key
         state
+        location
       }
       nextToken
     }

@@ -12,6 +12,7 @@ public class Task {
     private String body;
     private String state;
     private String s3key;
+    private String location;
 
 
 
@@ -34,6 +35,15 @@ public class Task {
         this.state = "New";
 
     }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     @Ignore
     public Task(String title, String body, String s3key) {
         this.title = title;
@@ -42,7 +52,15 @@ public class Task {
         this.state = "New";
 
     }
+    @Ignore
+    public Task(String title, String body, String s3key, String location) {
+        this.title = title;
+        this.body = body;
+        this.s3key = s3key;
+        this.location = location;
+        this.state = "New";
 
+    }
     public String getTitle() {
         return title;
     }

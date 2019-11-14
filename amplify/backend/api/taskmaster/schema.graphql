@@ -4,6 +4,7 @@ type Task @model {
   body: String!
   s3key: String
   state: String!
+  location: String
   team: Team @connection(name:"Teamlist")
 }
 type Team @model {

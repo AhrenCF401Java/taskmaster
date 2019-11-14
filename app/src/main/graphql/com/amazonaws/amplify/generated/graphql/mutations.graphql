@@ -6,6 +6,7 @@ mutation CreateTask($input: CreateTaskInput!) {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -22,6 +23,7 @@ mutation UpdateTask($input: UpdateTaskInput!) {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -38,6 +40,7 @@ mutation DeleteTask($input: DeleteTaskInput!) {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -58,6 +61,7 @@ mutation CreateTeam($input: CreateTeamInput!) {
         body
         s3key
         state
+        location
       }
       nextToken
     }
@@ -74,6 +78,7 @@ mutation UpdateTeam($input: UpdateTeamInput!) {
         body
         s3key
         state
+        location
       }
       nextToken
     }
@@ -90,6 +95,7 @@ mutation DeleteTeam($input: DeleteTeamInput!) {
         body
         s3key
         state
+        location
       }
       nextToken
     }

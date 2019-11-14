@@ -99,11 +99,17 @@
 
 
 
-*## Day 11/12/19 Lab 41: intent
+* ## Day 11/12/19 Lab 41: intent
 * TODO re-watch demo and reread intents
 implement intents.
 
-*## Day 11/13/19 Lab 42: Location
-Todo add location to a task
+* ## Day 11/13/19 Lab 42: Location
+    1. Added location dependencies
+    2. Added toggle button for user to indicate if they would like to save their location with the task.
+    3.
+
+
+* ## Day 11/14/19 Lab 43: Analytics
+    add analytics
 
 
