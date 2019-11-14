@@ -2,6 +2,7 @@ package com.example.taskmaster;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity
@@ -33,7 +34,7 @@ public class Task {
         this.state = "New";
 
     }
-
+    @Ignore
     public Task(String title, String body, String s3key) {
         this.title = title;
         this.body = body;
