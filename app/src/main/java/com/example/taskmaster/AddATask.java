@@ -3,6 +3,7 @@ package com.example.taskmaster;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,12 +11,13 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
 
 import com.amazonaws.amplify.generated.graphql.CreateTaskMutation;
 import com.amazonaws.mobile.client.AWSMobileClient;
@@ -28,6 +30,9 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.apollographql.apollo.GraphQLCall;
 import com.apollographql.apollo.exception.ApolloException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 
@@ -41,39 +46,71 @@ public class AddATask extends AppCompatActivity {
     private AppDatabase db;
     AWSAppSyncClient mAWSAppSyncClient;
     private String picturePath;
-
+    private FusedLocationProviderClient fusedLocationClient;
+    private String curLoc;
+    private Boolean saveLoc = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            curLoc = location.toString();
+                            // Logic to handle location object
+                        }
+                    }
+                });
+
+
+//        Intent that creates the app upon sharing a highlighted text
         // Get the intent that started this activity
         Intent intent = getIntent();
         // Figure out what to do based on the intent type
         if (intent.getType()!=null && intent.getType().equals("text/plain")){
-
              EditText taskTitleInput = findViewById(R.id.taskTitleInput);
              taskTitleInput.setText(intent.getStringExtra(Intent.EXTRA_TEXT));// Handle intents with text ...
         }
+
+
 
         mAWSAppSyncClient = AWSAppSyncClient.builder()
                 .context(getApplicationContext())
                 .awsConfiguration(new AWSConfiguration(getApplicationContext()))
                 .build();
 
-        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class,MainActivity.DATABASE_NAME).allowMainThreadQueries().build();
+
+//        Room DB Code*********************
+//        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class,MainActivity.DATABASE_NAME).allowMainThreadQueries().build();
 
         Button submitTask = findViewById(R.id.submitTaskButton);
+        final ToggleButton locToggle = findViewById(R.id.locToggle);
+        locToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked){
+                    saveLoc = true;
+                }
+            }
+        });
+
         submitTask.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
+
                 EditText taskTitleInput = findViewById(R.id.taskTitleInput);
                 final String title = taskTitleInput.getText().toString();
                 EditText taskBodyInput = findViewById(R.id.taskBodyInput);
                 final String taskBody = taskBodyInput.getText().toString();
+
 
 /*
 //                store in ROOM database
@@ -93,58 +130,62 @@ public class AddATask extends AppCompatActivity {
 
 //                Store in AWS
 //  https://docs.aws.amazon.com/aws-mobile/latest/developerguide/mobile-hub-add-aws-mobile-user-data-storage.html#mobile-hub-add-aws-user-data-storage-download
-                if(picturePath == null) {
+                if(picturePath == null && !saveLoc) {
                     taskMutation(title, taskBody);
+                }else if(picturePath == null && saveLoc){
+                    taskMutation(title, taskBody, curLoc);
+                }else if(picturePath != null & !saveLoc){
+
                 }else{
-                    TransferUtility transferUtility =
-                            TransferUtility.builder()
-                                    .context(getApplicationContext())
-                                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                                    .s3Client(new AmazonS3Client(AWSMobileClient.getInstance()))
-                                    .build();
-                    final TransferObserver uploadObserver =
-                            transferUtility.upload(
-                                    // filename in the
-                                    "public/" + picturePath.substring(picturePath.lastIndexOf("/") + 1),
-                                    new File(picturePath));
-                    picturePath = null;
-
-
-                    // Attach a listener to the observer to get state update and progress notifications
-                    uploadObserver.setTransferListener(new TransferListener() {
-
-
-                        @Override
-                        public void onStateChanged(int id, TransferState state) {
-                            if (TransferState.COMPLETED == state) {
-                                System.out.println("************************************************************\n"
-                                        + uploadObserver.getBucket() + "\n"
-                                        + uploadObserver.getKey() + "\n"
-                                        + "hello, its me your looking for *********************************************************************");
-//                      Get the S3 Key and store in the task
-                                String s3 = uploadObserver.getKey();
-                                taskMutation(title,taskBody,s3);
-                            }
-                        }
-
-                        @Override
-                        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                            float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
-                            int percentDone = (int) percentDonef;
-
-                            Log.d(TAG, "ID:" + id + " bytesCurrent: " + bytesCurrent
-                                    + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
-                        }
-
-                        @Override
-                        public void onError(int id, Exception ex) {
-                            // Handle errors
-                        }
-                    });
+                    uploadDataToS3(title,taskBody);
                 }
             }
         });
 
+    }
+
+
+
+    private void uploadDataToS3(final String title, final String taskBody){
+        TransferUtility transferUtility =
+                TransferUtility.builder()
+                        .context(getApplicationContext())
+                        .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                        .s3Client(new AmazonS3Client(AWSMobileClient.getInstance()))
+                        .build();
+        final TransferObserver uploadObserver =
+                transferUtility.upload(
+                        // filename in the
+                        "public/" + picturePath.substring(picturePath.lastIndexOf("/") + 1),
+                        new File(picturePath));
+        picturePath = null;
+
+        // Attach a listener to the observer to get state update and progress notifications
+        uploadObserver.setTransferListener(new TransferListener() {
+
+            @Override
+            public void onStateChanged(int id, TransferState state) {
+                if (TransferState.COMPLETED == state) {
+//                      Get the S3 Key and store in the task
+                    String s3 = uploadObserver.getKey();
+                    taskMutation(title,taskBody,s3);
+                }
+            }
+
+            @Override
+            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+                float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
+                int percentDone = (int) percentDonef;
+
+                Log.d(TAG, "ID:" + id + " bytesCurrent: " + bytesCurrent
+                        + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
+            }
+
+            @Override
+            public void onError(int id, Exception ex) {
+                // Handle errors
+            }
+        });
     }
 
     public void taskMutation(String title, String body){

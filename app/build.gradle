@@ -39,10 +39,10 @@ dependencies {
     implementation ('com.amazonaws:aws-android-sdk-auth-userpools:2.15.+@aar') { transitive = true }
 
 //    notification Dependencies
-    implementation 'com.google.android.gms:play-services-auth:15.0.1'
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
 
     implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-messaging:17.3.0'
+    implementation 'com.google.firebase:firebase-messaging:20.0.0'
 
     implementation 'com.amazonaws:aws-android-sdk-pinpoint:2.15.+'
     implementation ('com.amazonaws:aws-android-sdk-mobile-client:2.15.+@aar') { transitive = true }
@@ -70,4 +70,6 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
 }

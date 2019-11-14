@@ -6,6 +6,7 @@ subscription OnCreateTask {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -22,6 +23,7 @@ subscription OnUpdateTask {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -38,6 +40,7 @@ subscription OnDeleteTask {
     body
     s3key
     state
+    location
     team {
       id
       name
@@ -58,6 +61,7 @@ subscription OnCreateTeam {
         body
         s3key
         state
+        location
       }
       nextToken
     }
@@ -74,6 +78,7 @@ subscription OnUpdateTeam {
         body
         s3key
         state
+        location
       }
       nextToken
     }
@@ -90,6 +95,7 @@ subscription OnDeleteTeam {
         body
         s3key
         state
+        location
       }
       nextToken
     }
