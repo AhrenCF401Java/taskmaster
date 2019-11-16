@@ -28,15 +28,27 @@
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/detailsTitle"
-        app:layout_constraintVertical_bias="0.052" />
+        app:layout_constraintVertical_bias="0.234" />
 
     <ImageView
         android:id="@+id/taskImage"
         android:layout_width="308dp"
         android:layout_height="291dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.504"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="342dp"
         tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/locationData"
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:foregroundGravity="center_vertical|center_horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/detailsTextBody"
+        app:layout_constraintEnd_toEndOf="@+id/detailsTitle"
+        app:layout_constraintStart_toStartOf="@+id/detailsTitle"
+        app:layout_constraintTop_toBottomOf="@+id/detailsTitle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

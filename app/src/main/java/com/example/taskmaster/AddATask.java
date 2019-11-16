@@ -46,7 +46,6 @@ public class AddATask extends AppCompatActivity {
     private AppDatabase db;
     AWSAppSyncClient mAWSAppSyncClient;
     private String picturePath;
-    private FusedLocationProviderClient fusedLocationClient;
     private String curLoc;
     private Boolean saveLoc = false;
 
@@ -55,7 +54,7 @@ public class AddATask extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -63,7 +62,10 @@ public class AddATask extends AppCompatActivity {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                            curLoc = location.toString();
+                            Log.i(TAG, String.valueOf(location.getLatitude()));
+                            curLoc = location.getLatitude() + ", " + location.getLongitude();
+
+
                             // Logic to handle location object
                         }
                     }
@@ -97,6 +99,7 @@ public class AddATask extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked){
                     saveLoc = true;
+                    Log.i(TAG,"save Location checked");
                 }
             }
         });
@@ -132,12 +135,12 @@ public class AddATask extends AppCompatActivity {
 //  https://docs.aws.amazon.com/aws-mobile/latest/developerguide/mobile-hub-add-aws-mobile-user-data-storage.html#mobile-hub-add-aws-user-data-storage-download
                 if(picturePath == null && !saveLoc) {
                     taskMutation(title, taskBody);
-                }else if(picturePath == null && saveLoc){
-                    taskMutation(title, taskBody, curLoc);
-                }else if(picturePath != null & !saveLoc){
+                }else if(picturePath == null){
 
+                    taskMutation(title, taskBody,null, curLoc);
+                            Log.i(TAG, "called Mutation");
                 }else{
-                    uploadDataToS3(title,taskBody);
+                    uploadDataToS3(title,taskBody,curLoc);
                 }
             }
         });
@@ -146,7 +149,7 @@ public class AddATask extends AppCompatActivity {
 
 
 
-    private void uploadDataToS3(final String title, final String taskBody){
+    private void uploadDataToS3(final String title, final String taskBody, final String location){
         TransferUtility transferUtility =
                 TransferUtility.builder()
                         .context(getApplicationContext())
@@ -164,11 +167,16 @@ public class AddATask extends AppCompatActivity {
         uploadObserver.setTransferListener(new TransferListener() {
 
             @Override
+
             public void onStateChanged(int id, TransferState state) {
                 if (TransferState.COMPLETED == state) {
-//                      Get the S3 Key and store in the task
+//               Get the S3 Key and store in the task
                     String s3 = uploadObserver.getKey();
-                    taskMutation(title,taskBody,s3);
+                    if (!saveLoc) {
+                        taskMutation(title, taskBody, s3, null);
+                    }else{
+                        taskMutation(title, taskBody, s3, location);
+                    }
                 }
             }
 
@@ -176,7 +184,6 @@ public class AddATask extends AppCompatActivity {
             public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
                 float percentDonef = ((float) bytesCurrent / (float) bytesTotal) * 100;
                 int percentDone = (int) percentDonef;
-
                 Log.d(TAG, "ID:" + id + " bytesCurrent: " + bytesCurrent
                         + " bytesTotal: " + bytesTotal + " " + percentDone + "%");
             }
@@ -188,6 +195,10 @@ public class AddATask extends AppCompatActivity {
         });
     }
 
+
+
+
+ //********************      Task Mutation methods *******************************//
     public void taskMutation(String title, String body){
         CreateTaskInput createTaskInput = CreateTaskInput.builder()
                 .title(title)
@@ -201,7 +212,7 @@ public class AddATask extends AppCompatActivity {
 //                    what happens on response
                     public void onResponse(@Nonnull com.apollographql.apollo.api.Response<CreateTaskMutation.Data> response) {
                         Log.i("Add Task", "Posted");
-                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
+
 
                     }
 
@@ -212,20 +223,18 @@ public class AddATask extends AppCompatActivity {
                 });
     }
 
-    public void taskMutation(String title, String body,String s3key){
-        CreateTaskInput createTaskInput = CreateTaskInput.builder()
-                .title(title)
-                .body(body)
-                .s3key(s3key)
-                .state("New")
-                .build();
-//gets data from Dynamo db
+
+    public void taskMutation(String title, String body,String s3key,String location){
+//    Send the input to a function that decides how the task builder should be built and return it.
+        CreateTaskInput  createTaskInput = taskBuilder(title,body,s3key,location);
+//    Get data from Dynamo db
         mAWSAppSyncClient.mutate(CreateTaskMutation.builder().input(createTaskInput).build())
                 .enqueue(new GraphQLCall.Callback<CreateTaskMutation.Data>() {
                     @Override
 //                    what happens on response
                     public void onResponse(@Nonnull com.apollographql.apollo.api.Response<CreateTaskMutation.Data> response) {
-                        Log.i("Add Task", "Posted");
+                        Log.i(TAG, "Posted");
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -234,6 +243,40 @@ public class AddATask extends AppCompatActivity {
                     }
                 });
     }
+//    THis function decides what the task builder should contain based on the s3 and location string values.
+    private CreateTaskInput taskBuilder(String title, String body,String s3key,String location){
+        if(s3key == null) {
+            Log.i(TAG,"Task Builder with s3 null");
+            return CreateTaskInput.builder()
+                    .title(title)
+                    .body(body)
+                    .location(location)
+                    .state("New")
+                    .build();
+        }else if (location == null){
+            Log.i(TAG,"Task Builder with location null");
+            return CreateTaskInput.builder()
+                    .title(title)
+                    .body(body)
+                    .s3key(s3key)
+                    .state("New")
+                    .build();
+        }else{
+            Log.i(TAG,"Task Builder all options");
+            return CreateTaskInput.builder()
+                    .title(title)
+                    .body(body)
+                    .s3key(s3key)
+                    .location(location)
+                    .state("New")
+                    .build();
+        }
+
+    }
+
+
+
+
 
 //***************************************** Image picker ****************************************//
 
@@ -275,7 +318,7 @@ public class AddATask extends AppCompatActivity {
     }
 
 
-
+//********************** ohHTTP code for reference *****************************************//
 
 //    private final OkHttpClient client = new OkHttpClient();
 //
