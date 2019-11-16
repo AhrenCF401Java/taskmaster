@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
                     authButton.setText("Sign In");
                 }else{
                     AWSMobileClient.getInstance().showSignIn(MainActivity.this,
+//                            add additional view options here
                             SignInUIOptions.builder().build(),
                             new com.amazonaws.mobile.client.Callback<UserStateDetails>() {
                                 @Override
@@ -271,8 +272,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     public void taskCommand(Task task) {
         Intent goToDetailsPage = new Intent(MainActivity.this,DetailsPage.class);
         goToDetailsPage.putExtra("task", task.getTitle());
-        goToDetailsPage.putExtra("task", task.getState());
-        goToDetailsPage.putExtra("task", task.getBody());
+        goToDetailsPage.putExtra("state", task.getState());
+        goToDetailsPage.putExtra("details", task.getBody());
+        goToDetailsPage.putExtra("location", task.getLocation());
         MainActivity.this.startActivity(goToDetailsPage);
     }
 
