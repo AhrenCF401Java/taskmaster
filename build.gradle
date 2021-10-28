@@ -3,13 +3,15 @@
 buildscript {
     repositories {
         google()
-        jcenter()
-        
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath 'com.amazonaws:aws-android-sdk-appsync-gradle-plugin:2.9.+'
-        classpath 'com.google.gms:google-services:4.3.2'
+        classpath 'com.android.tools.build:gradle:3.5.4'
+        classpath 'com.amazonaws:aws-android-sdk-appsync-gradle-plugin:3.1.2'
+        classpath 'com.google.gms:google-services:4.3.10'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -19,8 +21,10 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
-        
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+
     }
 }
 

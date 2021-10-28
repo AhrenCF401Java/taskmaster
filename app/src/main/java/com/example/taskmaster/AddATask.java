@@ -49,36 +49,21 @@ public class AddATask extends AppCompatActivity {
     private String curLoc;
     private Boolean saveLoc = false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_atask);
-
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            Log.i(TAG, String.valueOf(location.getLatitude()));
-                            curLoc = location.getLatitude() + ", " + location.getLongitude();
+        Button submitTask = findViewById(R.id.submitTaskButton);
+        final ToggleButton locToggle = findViewById(R.id.locToggle);
 
 
-                            // Logic to handle location object
-                        }
-                    }
-                });
-
-
-//        Intent that creates the app upon sharing a highlighted text
         // Get the intent that started this activity
         Intent intent = getIntent();
         // Figure out what to do based on the intent type
         if (intent.getType()!=null && intent.getType().equals("text/plain")){
              EditText taskTitleInput = findViewById(R.id.taskTitleInput);
-             taskTitleInput.setText(intent.getStringExtra(Intent.EXTRA_TEXT));// Handle intents with text ...
+             taskTitleInput.setText(intent.getStringExtra(Intent.EXTRA_TEXT));
         }
 
 
@@ -89,21 +74,37 @@ public class AddATask extends AppCompatActivity {
                 .build();
 
 
-//        Room DB Code*********************
-//        db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class,MainActivity.DATABASE_NAME).allowMainThreadQueries().build();
+/**********  Room DB Code  ******************/
+// db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class,MainActivity.DATABASE_NAME).allowMainThreadQueries().build();
 
-        Button submitTask = findViewById(R.id.submitTaskButton);
-        final ToggleButton locToggle = findViewById(R.id.locToggle);
+       /******Location Toggle Listener*******/
         locToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked){
                     saveLoc = true;
                     Log.i(TAG,"save Location checked");
+                }else saveLoc = false;
+                if(saveLoc){
+                    FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(AddATask.this);
+                    fusedLocationClient.getLastLocation()
+                            .addOnSuccessListener(AddATask.this, new OnSuccessListener<Location>() {
+                                @Override
+                                public void onSuccess(Location location) {
+                                    // Got last known location. In some rare situations this can be null.
+                                    if (location != null) {
+                                        Log.i(TAG, String.valueOf(location.getLatitude()));
+                                        curLoc = location.getLatitude() + ", " + location.getLongitude();
+                                        Toast.makeText(getApplicationContext(),curLoc,Toast.LENGTH_SHORT);
+                                    }
+                                }
+                            });
                 }
             }
         });
 
+
+    /*************** Submit Task Listener **************/
         submitTask.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
@@ -115,7 +116,18 @@ public class AddATask extends AppCompatActivity {
                 final String taskBody = taskBodyInput.getText().toString();
 
 
-/*
+                /***********Store in AWS *****************/
+                //  https://docs.aws.amazon.com/aws-mobile/latest/developerguide/mobile-hub-add-aws-mobile-user-data-storage.html#mobile-hub-add-aws-user-data-storage-download
+                if(picturePath == null && !saveLoc)   taskMutation(title, taskBody);
+                else if(picturePath == null) {
+                    taskMutation(title, taskBody, null, curLoc);
+                    Log.i(TAG, "called Mutation");
+                }else  uploadDataToS3(title,taskBody,curLoc);
+            }
+        });
+
+
+/***** RooDB Methods for reference
 //                store in ROOM database
                 db.taskDao().addTask(new Task(title,taskBody));
 //
@@ -130,25 +142,10 @@ public class AddATask extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),getResources().getString(R.string.submitConfimation), Toast.LENGTH_SHORT).show();
 */
 
-
-//                Store in AWS
-//  https://docs.aws.amazon.com/aws-mobile/latest/developerguide/mobile-hub-add-aws-mobile-user-data-storage.html#mobile-hub-add-aws-user-data-storage-download
-                if(picturePath == null && !saveLoc) {
-                    taskMutation(title, taskBody);
-                }else if(picturePath == null){
-
-                    taskMutation(title, taskBody,null, curLoc);
-                            Log.i(TAG, "called Mutation");
-                }else{
-                    uploadDataToS3(title,taskBody,curLoc);
-                }
-            }
-        });
-
     }
 
 
-
+/************************* AWS Upload to S3 Method *******************************/
     private void uploadDataToS3(final String title, final String taskBody, final String location){
         TransferUtility transferUtility =
                 TransferUtility.builder()
@@ -165,9 +162,7 @@ public class AddATask extends AppCompatActivity {
 
         // Attach a listener to the observer to get state update and progress notifications
         uploadObserver.setTransferListener(new TransferListener() {
-
             @Override
-
             public void onStateChanged(int id, TransferState state) {
                 if (TransferState.COMPLETED == state) {
 //               Get the S3 Key and store in the task
@@ -198,7 +193,7 @@ public class AddATask extends AppCompatActivity {
 
 
 
- //********************      Task Mutation methods *******************************//
+ /********************   Task Mutation methods *******************************/
     public void taskMutation(String title, String body){
         CreateTaskInput createTaskInput = CreateTaskInput.builder()
                 .title(title)
@@ -212,8 +207,6 @@ public class AddATask extends AppCompatActivity {
 //                    what happens on response
                     public void onResponse(@Nonnull com.apollographql.apollo.api.Response<CreateTaskMutation.Data> response) {
                         Log.i("Add Task", "Posted");
-
-
                     }
 
                     @Override
@@ -243,7 +236,8 @@ public class AddATask extends AppCompatActivity {
                     }
                 });
     }
-//    THis function decides what the task builder should contain based on the s3 and location string values.
+    /******** Task Builder *********
+     * THis function decides what the task builder should contain based on the s3 and location string values.*/
     private CreateTaskInput taskBuilder(String title, String body,String s3key,String location){
         if(s3key == null) {
             Log.i(TAG,"Task Builder with s3 null");
@@ -278,7 +272,7 @@ public class AddATask extends AppCompatActivity {
 
 
 
-//***************************************** Image picker ****************************************//
+/***************************************** Image picker ****************************************/
 
     private static final int READ_REQUEST_CODE = 42;
     public void pickAFile(View v){
@@ -318,7 +312,7 @@ public class AddATask extends AppCompatActivity {
     }
 
 
-//********************** ohHTTP code for reference *****************************************//
+/********************** okHTTP code for reference *****************************************/
 
 //    private final OkHttpClient client = new OkHttpClient();
 //

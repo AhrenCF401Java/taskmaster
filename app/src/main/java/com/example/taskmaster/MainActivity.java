@@ -1,6 +1,9 @@
 package com.example.taskmaster;
 
-import android.content.Context;
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,7 +14,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,15 +27,10 @@ import com.amazonaws.mobile.client.UserStateDetails;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.appsync.AWSAppSyncClient;
 import com.amazonaws.mobileconnectors.appsync.fetcher.AppSyncResponseFetchers;
-import com.amazonaws.mobileconnectors.pinpoint.PinpointConfiguration;
-import com.amazonaws.mobileconnectors.pinpoint.PinpointManager;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferService;
 import com.apollographql.apollo.GraphQLCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.exception.ApolloException;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -41,10 +38,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import type.CreateTeamInput;
-
-import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskInteractionListener{
 
@@ -60,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getPinpointManager(getApplicationContext());
+//        getPinpointManager(getApplicationContext());
 
         String[] permissions = {READ_EXTERNAL_STORAGE, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION};
 
@@ -279,46 +272,44 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
 
-    private static PinpointManager pinpointManager;
+//    private static PinpointManager pinpointManager;
+//
+//    public static PinpointManager getPinpointManager(final Context applicationContext) {
+//        if (pinpointManager == null) {
+//            final AWSConfiguration awsConfig = new AWSConfiguration(applicationContext);
+//            AWSMobileClient.getInstance().initialize(applicationContext, awsConfig, new com.amazonaws.mobile.client.Callback<UserStateDetails>() {
+//                @Override
+//                public void onResult(UserStateDetails userStateDetails) {
+//                    Log.i("INIT", userStateDetails.getUserState().toString());
+//                }
+//
+//                @Override
+//                public void onError(Exception e) {
+//                    Log.e("INIT", "Initialization error.", e);
+//                }
+//            });
 
-    public static PinpointManager getPinpointManager(final Context applicationContext) {
-        if (pinpointManager == null) {
-            final AWSConfiguration awsConfig = new AWSConfiguration(applicationContext);
-            AWSMobileClient.getInstance().initialize(applicationContext, awsConfig, new com.amazonaws.mobile.client.Callback<UserStateDetails>() {
-                @Override
-                public void onResult(UserStateDetails userStateDetails) {
-                    Log.i("INIT", userStateDetails.getUserState().toString());
-                }
+//            PinpointConfiguration pinpointConfig = new PinpointConfiguration(
+//                    applicationContext,
+//                    AWSMobileClient.getInstance(),
+//                    awsConfig);
 
-                @Override
-                public void onError(Exception e) {
-                    Log.e("INIT", "Initialization error.", e);
-                }
-            });
-
-            PinpointConfiguration pinpointConfig = new PinpointConfiguration(
-                    applicationContext,
-                    AWSMobileClient.getInstance(),
-                    awsConfig);
-
-            pinpointManager = new PinpointManager(pinpointConfig);
-
-            FirebaseInstanceId.getInstance().getInstanceId()
-                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                        @Override
-                        public void onComplete(@NonNull com.google.android.gms.tasks.Task<InstanceIdResult> task) {
-                            if (!task.isSuccessful()) {
-                                Log.w(TAG, "getInstanceId failed", task.getException());
-                                return;
-                            }
-                            final String token = task.getResult().getToken();
-                            Log.d(TAG, "Registering push notifications token: " + token);
-                            pinpointManager.getNotificationClient().registerDeviceToken(token);
-                        }
-                    });
-        }
-        return pinpointManager;
-    }
+//            pinpointManager = new PinpointManager(pinpointConfig);
+//            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
+//                @Override
+//                public void onComplete(@NonNull com.google.android.gms.tasks.Task<String> task) {
+//                    if (!task.isSuccessful()) {
+//                        Log.w(TAG, "getInstanceId failed", task.getException());
+//                        return;
+//                    }
+//                    final String token = task.getResult();
+//                    Log.d(TAG, "Registering push notifications token: " + token);
+//                    pinpointManager.getNotificationClient().registerDeviceToken(token);
+//                }
+//            });
+//        }
+//        return pinpointManager;
+//    }
 
 
 //
